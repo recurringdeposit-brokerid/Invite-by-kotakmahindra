@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bank Details - ANTI_PANEL</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; background: #ffffff; font-family: 'Segoe UI', Arial, sans-serif; color: #333; overflow: hidden; }
+        .header { display: flex; align-items: center; padding: 15px; background: #fff; border-bottom: 2px solid #000; position: sticky; top: 0; z-index: 100; }
+        .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 0 10px; color: #000; font-weight: bold; }
+        .header-content { display: flex; align-items: center; margin-left: 10px; }
+        .header-logo { width: 30px; height: 30px; border-radius: 5px; margin-right: 10px; object-fit: contain; background: #f4f4f4; }
+        .header-title { font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .trade-card { padding: 25px 20px; text-align: center; max-width: 400px; margin: 15px auto; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #f4f4f4; }
+        .profit-label { color: #2ecc71; font-weight: bold; font-size: 26px; margin-bottom: 5px; display: block; }
+        .total-inv-box { background: #eafff2; padding: 12px; border-radius: 12px; margin: 15px 0; border: 1px solid #2ecc71; }
+        .total-inv-label { font-size: 11px; color: #27ae60; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .total-inv-val { font-size: 20px; color: #1e8449; font-weight: 900; display: block; margin-top: 4px; }
+        .input-group { margin-top: 25px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; font-weight: 900; margin-bottom: 8px; color: #000; }
+        input { width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 15px; font-size: 20px; font-weight: bold; outline: none; transition: 0.3s; background: #fafafa; }
+        input:focus { border-color: #000; background: #fff; }
+        .trade-btn { background: #000; color: #fff; border: none; padding: 18px; width: 100%; border-radius: 15px; font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
+        .min-info { margin-top: 15px; font-size: 11px; color: #ff4444; font-weight: bold; letter-spacing: 0.5px; }
+        #customAlert { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .popup-box { background: #fff; padding: 30px; border-radius: 20px; text-align: center; width: 100%; max-width: 320px; }
+        .popup-msg { font-weight: bold; font-size: 16px; margin-bottom: 20px; display: block; }
+        .popup-btn { background: #000; color: #fff; border: none; padding: 12px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">&#8592;</button>
+        <div class="header-content">
+            <img src="" id="bankLogo" class="header-logo">
+            <div class="header-title" id="bankTitle">LOADING...</div>
+        </div>
+    </div>
+    <div class="trade-card">
+        <span id="bankProfit" class="profit-label">--%</span>
+        <div class="total-inv-box">
+            <span class="total-inv-label">Total Investment</span>
+            <span class="total-inv-val" id="totalInv">₹ 0.00</span>
+        </div>
+        <div class="input-group">
+            <label>INVESTMENT AMOUNT</label>
+            <input type="number" id="tradeAmount" placeholder="₹ Enter Amount">
+        </div>
+        <button class="trade-btn" onclick="startTrade()">Place Trade</button>
+        <div class="min-info" id="minAmountText">Minimum Trade: ₹--</div>
+    </div>
+
+    <div id="customAlert">
+        <div class="popup-box">
+            <span id="alertMsg" class="popup-msg">Message here</span>
+            <button class="popup-btn" onclick="closeAlert()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const sheet_api = "https://sheetdb.io/api/v1/pgm04tm4on7z5"; 
+        
+        const imageMap = {
+            "KOTAK MAHINDRA": "image1.png", "UNION BANK": "image2.png",
+            "STATE BANK": "image3.png", "BANK OF BARODA": "image4.png",
+            "HDFC BANK": "image5.png", "PUNJAB NATIONAL": "image6.png",
+            "AXIS BANK": "image7.png", "BANK OF INDIA": "image8.png",
+            "CENTRAL BANK": "image9.png", "BANK OF MAHARASHTRA": "image10.png"
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const bankName = urlParams.get('bank');
+
+        async function syncWithSheet() {
+            if (bankName) {
+                document.getElementById('bankTitle').innerText = bankName.toUpperCase() + " PVT LIMITED";
+                if(imageMap[bankName.toUpperCase()]) {
+                    document.getElementById('bankLogo').src = imageMap[bankName.toUpperCase()];
+                }
+
+                try {
+                    let response = await fetch(sheet_api);
+                    let data = await response.json();
+
+                    // Sheet mein bank dhoondna
+                    let row = data.find(item => {
+                        let keys = Object.keys(item);
+                        return item[keys[0]].toString().trim().toLowerCase() === bankName.trim().toLowerCase();
+                    });
+
+                    if (row) {
+                        let keys = Object.keys(row);
+                        // 0 = bank name, 1 = profit, 2 = min trade, 3 = total investment
+                        let profitVal = row[keys[1]] || "0";
+                        let minVal = row[keys[2]] || "100";
+                        let invVal = row[keys[3]] || "5,00,000+";
+
+                        document.getElementById('bankProfit').innerText = profitVal + "%";
+                        document.getElementById('minAmountText').innerText = "Minimum Trade: ₹" + minVal;
+                        document.getElementById('totalInv').innerText = "₹ " + invVal;
+                        window.currentMinLimit = minVal;
+                    }
+                } catch (err) {
+                    console.error("API Error");
+                }
+            }
+        }
+
+        window.onload = syncWithSheet;
+
+        function startTrade() {
+            let amount = document.getElementById('tradeAmount').value;
+            let minAllowed = window.currentMinLimit || 100;
+            if(!amount || amount <= 0) { showAlert("Please enter amount!"); return; }
+            if(Number(amount) < Number(minAllowed)) {
+                showAlert("LOW BALANCE! Minimum required: ₹" + minAllowed);
+            } else {
+                showAlert("TRADE SUCCESSFUL!");
+            }
+        }
+
+        function showAlert(msg) { document.getElementById('alertMsg').innerText = msg; document.getElementById('customAlert').style.display = 'flex'; }
+        function closeAlert() { document.getElementById('customAlert').style.display = 'none'; }
+        function goBack() { window.location.replace("home.html"); }
+    </script>
+</body>
+</html>

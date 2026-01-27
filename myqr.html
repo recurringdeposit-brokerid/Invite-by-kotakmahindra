@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | 49club</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg: #060b13;
+            --card: #111926;
+            --accent: #00b4db;
+            --text: #e2e8f0;
+            --dim: #94a3b8;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* --- BACK LOGO DESIGN --- */
+        .back-nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border: 1px solid #1f2937;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .back-nav:hover { background: var(--accent); color: black; }
+        .back-nav svg { width: 20px; height: 20px; color: white; }
+
+        .payment-card {
+            background: var(--card);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px;
+            border: 1px solid #1f2937;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .timer-box {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 8px 15px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .amount-display h2 { font-size: 48px; color: var(--accent); margin-bottom: 10px; }
+
+        .qr-outer-box { display: flex; justify-content: center; width: 100%; margin-bottom: 20px; }
+        .qr-container {
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.6);
+            width: 100%;
+            max-width: 450px;
+        }
+        .qr-container img { width: 100%; height: auto; display: block; }
+
+        .upi-box {
+            background: #090e16;
+            border: 1px dashed #334155;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .upi-id { font-size: 14px; font-weight: 600; color: var(--dim); }
+        .copy-btn {
+            background: var(--accent);
+            color: black;
+            border: none;
+            padding: 8px 16px; border-radius: 8px;
+            font-size: 12px; font-weight: 800; cursor: pointer;
+        }
+
+        .steps {
+            text-align: left;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.03);
+            padding: 15px; border-radius: 15px;
+        }
+        .step-item { font-size: 13px; color: var(--dim); margin-bottom: 8px; display: flex; gap: 8px; }
+        .step-item::before { content: "•"; color: var(--accent); font-weight: bold; }
+
+        .btn-done {
+            width: 100%; background: var(--success); color: white;
+            border: none; padding: 20px; border-radius: 18px;
+            font-size: 18px; font-weight: 800; cursor: pointer;
+        }
+
+        /* --- LOADING OVERLAY --- */
+        #loaderOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 11, 19, 0.95);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 2000;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(0, 180, 219, 0.1);
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- CUSTOM ERROR POPUP (No "This Page Says") --- */
+        #errorModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none; justify-content: center; align-items: center;
+            z-index: 3000;
+        }
+        .modal-content {
+            background: var(--card);
+            padding: 30px; border-radius: 20px;
+            width: 85%; max-width: 350px;
+            text-align: center; border: 1px solid #334155;
+        }
+        .modal-content h3 { color: var(--error); margin-bottom: 10px; }
+        .modal-content p { color: var(--dim); font-size: 14px; margin-bottom: 20px; }
+        .modal-btn {
+            background: var(--accent); color: black;
+            border: none; padding: 12px 25px; border-radius: 10px;
+            font-weight: 700; cursor: pointer; width: 100%;
+        }
+
+        #copyMsg {
+            position: fixed; top: 20px; background: var(--accent); color: black;
+            padding: 10px 20px; border-radius: 10px; font-weight: bold;
+            display: none; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="deposit.html" class="back-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </a>
+
+    <div id="loaderOverlay">
+        <div class="spinner"></div>
+        <p style="font-weight: 600;">Verifying Transaction...</p>
+    </div>
+
+    <div id="errorModal">
+        <div class="modal-content">
+            <svg style="color:var(--error); margin-bottom:15px" width="50" height="50" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+            <h3>Payment Failed</h3>
+            <p>Payment not received yet. Please ensure you have transferred the exact amount and try again.</p>
+            <button class="modal-btn" onclick="closeModal()">Try Again</button>
+        </div>
+    </div>
+
+    <div id="copyMsg">UPI ID Copied!</div>
+
+    <div class="payment-card">
+        <div class="timer-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Expires in: <span id="timer">10:00</span>
+        </div>
+        
+        <div class="amount-display">
+            <h2 id="displayAmt">₹0.00</h2>
+        </div>
+        
+        <div class="qr-outer-box">
+            <div class="qr-container">
+                <img src="myqr.png" alt="Scan to Pay">
+            </div>
+        </div>
+
+        <div class="upi-box">
+            <div class="upi-id" id="upiId">fbnanbspt@ptyes</div>
+            <button class="copy-btn" onclick="copyUPI()">Copy ID</button>
+        </div>
+
+        <div class="steps">
+            <div class="step-item">Scan QR using any UPI app.</div>
+            <div class="step-item">Enter exact amount shown above.</div>
+            <div class="step-item">Click confirm once payment is complete.</div>
+        </div>
+
+        <button class="btn-done" onclick="checkStatus()">Confirm Payment</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const savedAmt = localStorage.getItem('depositAmount') || "0.00";
+            document.getElementById('displayAmt').innerText = "₹" + parseFloat(savedAmt).toLocaleString();
+            startTimer(600);
+        }
+
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            const display = document.querySelector('#timer');
+            setInterval(() => {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                if (--timer < 0) { window.location.href = "deposit.html"; }
+            }, 1000);
+        }
+
+        function copyUPI() {
+            const upiText = document.getElementById('upiId').innerText;
+            navigator.clipboard.writeText(upiText);
+            const msg = document.getElementById('copyMsg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 2000);
+        }
+
+        function checkStatus() {
+            document.getElementById('loaderOverlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('loaderOverlay').style.display = 'none';
+                document.getElementById('errorModal').style.display = 'flex';
+            }, 5000);
+        }
+
+        function closeModal() {
+            document.getElementById('errorModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

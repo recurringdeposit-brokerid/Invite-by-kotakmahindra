@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RD Broker | Financial Terminal</title>
+    <style>
+        /* CSS Reset & Variables */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        :root {
+            --bg-body: #060b13;
+            --bg-card: #111926;
+            --bg-nav: #0f172a;
+            --accent: #00b4db;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --border: #1f2937;
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            user-select: none;
+        }
+
+        /* Navigation */
+        .nav-header { 
+            background: var(--bg-nav); 
+            border-bottom: 1px solid var(--border); 
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-dim);
+            font-weight: 600;
+            gap: 8px;
+        }
+
+        .terminal-title {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        /* Cards */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .balance-title { font-size: 12px; color: var(--text-dim); text-transform: uppercase; font-weight: bold; }
+        
+        .balance-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .balance-amount { font-size: 32px; font-weight: bold; }
+
+        .refresh-icon {
+            cursor: pointer;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+        }
+        
+        .spin { animation: spinAnim 0.7s ease-in-out; }
+
+        @keyframes spinAnim {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        h1 { font-size: 24px; margin-bottom: 25px; font-weight: bold; }
+
+        /* Payment Methods Grid */
+        .label-text { font-size: 11px; font-weight: bold; color: var(--text-dim); text-transform: uppercase; margin-bottom: 15px; display: block; }
+        
+        .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 30px; }
+        
+        .method-card {
+            background: #000000; 
+            border: 1px solid #334155;
+            border-radius: 15px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            outline: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .method-card img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .method-card span { 
+            font-size: 10px; 
+            font-weight: bold; 
+            color: #ffffff;
+        }
+
+        .active-method { 
+            border-color: var(--accent) !important; 
+            box-shadow: 0 0 15px rgba(0, 180, 219, 0.3);
+        }
+
+        /* Amount Selection */
+        .amount-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        
+        .amount-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .active-amount { border-color: var(--accent) !important; color: var(--accent); background: rgba(0, 180, 219, 0.1); }
+
+        .input-wrapper { position: relative; margin-top: 15px; }
+        .input-wrapper span { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 20px; font-weight: bold; color: var(--accent); }
+
+        input[type="number"] {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            padding: 18px 18px 18px 45px;
+            border-radius: 15px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            outline: none;
+        }
+
+        .btn-main {
+            width: 100%;
+            background: linear-gradient(90deg, #00b4db 0%, #0083b0 100%);
+            color: #000;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(0, 180, 219, 0.2);
+            outline: none;
+        }
+
+        .history-empty { text-align: center; padding: 40px 0; opacity: 0.3; }
+
+        #statusMsg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 4px solid var(--accent);
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-header">
+        <a href="home.html" class="back-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+            Back
+        </a>
+        <div class="terminal-title">Secure Terminal</div>
+        <div style="width: 50px;"></div>
+    </nav>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="glass-card">
+                <p class="balance-title">Live Balance</p>
+                <div class="balance-row">
+                    <h2 class="balance-amount">₹0.00</h2>
+                    <div class="refresh-icon" onclick="refreshBalance(this)">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="glass-card">
+                <h1>Deposit Funds</h1>
+
+                <label class="label-text">Select Gateway</label>
+                <div class="method-grid">
+                    <div class="method-card active-method" onclick="selectMethod(this, '₹', [1000, 5000, 10000, 50000])">
+                        <img src="image11.png" alt="UPI">
+                        <span>UPI / APPS</span>
+                    </div>
+                    <div class="method-card" onclick="selectMethod(this, '₮', [10, 50, 100, 500])">
+                        <img src="image12.png" alt="USDT">
+                        <span>USDT</span>
+                    </div>
+                    <div class="method-card" onclick="selectMethod(this, '$', [20, 50, 100, 200])">
+                        <img src="image13.png" alt="PayPal">
+                        <span>PAYPAL</span>
+                    </div>
+                    <div class="method-card" onclick="selectMethod(this, '₿', [0.001, 0.01, 0.05, 0.1])">
+                        <img src="image14.png" alt="Crypto">
+                        <span>CRYPTO</span>
+                    </div>
+                </div>
+
+                <label class="label-text" id="rangeLabel">Amount (Min: 500)</label>
+                <div class="amount-grid" id="amountOptions">
+                    <button class="amount-btn" onclick="selectAmt(this, 1000)">₹1,000</button>
+                    <button class="amount-btn active-amount" onclick="selectAmt(this, 5000)">₹5,000</button>
+                    <button class="amount-btn" onclick="selectAmt(this, 10000)">₹10,000</button>
+                    <button class="amount-btn" onclick="selectAmt(this, 50000)">₹50,000</button>
+                    <button class="amount-btn" onclick="selectAmt(this, 100000)" style="color:#38bdf8">MAX</button>
+                </div>
+
+                <div class="input-wrapper">
+                    <span id="symbol">₹</span>
+                    <input type="number" id="finalAmt" value="5000">
+                </div>
+
+                <button class="btn-main" onclick="processDeposit()">Deposit Now</button>
+            </div>
+
+            <div class="glass-card">
+                <label class="label-text">Recent Transactions</label>
+                <div class="history-empty">
+                    <div>📁</div>
+                    <p>No Data Found</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="statusMsg">Processing request...</div>
+
+    <script>
+        let currentSymbol = "₹";
+
+        function refreshBalance(icon) {
+            icon.classList.add('spin');
+            setTimeout(() => icon.classList.remove('spin'), 700);
+        }
+
+        function selectAmt(btn, val) {
+            document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active-amount'));
+            btn.classList.add('active-amount');
+            document.getElementById('finalAmt').value = val;
+        }
+
+        // Updated selectMethod function
+        function selectMethod(el, symbol, options) {
+            // UI Update: Active Method
+            document.querySelectorAll('.method-card').forEach(m => m.classList.remove('active-method'));
+            el.classList.add('active-method');
+
+            // Update Global Symbol
+            currentSymbol = symbol;
+            document.getElementById('symbol').innerText = symbol;
+
+            // Update Grid Buttons
+            const grid = document.getElementById('amountOptions');
+            grid.innerHTML = ""; // Clear existing
+            
+            options.forEach((val, index) => {
+                const btn = document.createElement('button');
+                btn.className = `amount-btn ${index === 1 ? 'active-amount' : ''}`;
+                btn.innerText = symbol + val;
+                btn.onclick = function() { selectAmt(this, val); };
+                grid.appendChild(btn);
+                
+                // Set default value from the 2nd button (index 1)
+                if(index === 1) document.getElementById('finalAmt').value = val;
+            });
+
+            // Update Label based on currency
+            const label = document.getElementById('rangeLabel');
+            if(symbol === '₹') label.innerText = "Amount (500 - 1,000,000)";
+            else label.innerText = "Amount (Enter value below)";
+        }
+
+        function processDeposit() {
+            const amt = document.getElementById('finalAmt').value;
+            
+            // Basic validation for UPI
+            if(currentSymbol === '₹' && amt < 500) {
+                showMsg("Minimum deposit is ₹500");
+                return;
+            }
+
+            localStorage.setItem('depositAmount', amt);
+            localStorage.setItem('currency', currentSymbol);
+            
+            showMsg(`Redirecting to ${currentSymbol} Gateway...`);
+            
+            setTimeout(() => {
+                window.location.href = "myqr.html"; 
+            }, 1500);
+        }
+
+        function showMsg(text) {
+            const msg = document.getElementById('statusMsg');
+            msg.innerText = text;
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 2500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Trade | RD Broker</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            margin: 0; 
+            background: #ffffff; 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
+
+        /* Header Styles */
+        header { 
+            padding: 15px 20px; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            align-items: center; 
+            background: #fff;
+        }
+
+        .back-btn { 
+            text-decoration: none; 
+            color: #000; 
+            font-size: 24px; 
+            font-weight: bold; 
+            cursor: pointer;
+            padding-right: 20px;
+        }
+
+        .header-title { 
+            font-weight: 800; 
+            font-size: 18px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+
+        /* Center Content Area */
+        .content { 
+            flex-grow: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column;
+        }
+
+        .no-data { 
+            font-weight: 900; 
+            font-size: 20px; 
+            color: #cccccc; 
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .sub-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="home.html" class="back-btn">&lt;</a>
+        <div class="header-title">MY TRADE</div>
+    </header>
+
+    <div class="content">
+        <div class="no-data">NO DATA</div>
+        <div class="sub-text">You haven't placed any trades yet.</div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RD Broker - Login</title>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; touch-action: manipulation; }
+        body { background: #ffffff; color: #000000; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .box { background: #f9f9f9; padding: 40px 30px; width: 90%; max-width: 420px; border-radius: 20px; border: 1px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .logo { color: #000000; font-size: 30px; font-weight: 900; margin-bottom: 25px; letter-spacing: 2px; border-bottom: 3px solid #000; display: inline-block; padding-bottom: 5px; }
+        input { width: 100%; padding: 15px; margin: 12px 0; background: #fff; border: 1px solid #bbb; color: #000; border-radius: 10px; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: #000; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
+        .btn { background: #000000; color: #ffffff; border: none; padding: 16px; width: 100%; font-weight: bold; margin-top: 15px; border-radius: 10px; cursor: pointer; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
+        .btn:active { transform: scale(0.96); background: #333; }
+        .switch { font-size: 14px; color: #444; margin-top: 20px; cursor: pointer; font-weight: bold; display: block; text-decoration: underline; }
+        #loginPage { display: none; }
+        /* Alert Style */
+        #customAlert { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .alert-box { background: #fff; padding: 25px; border-radius: 15px; text-align: center; width: 85%; max-width: 320px; border-top: 5px solid #000; }
+    </style>
+</head>
+<body>
+    <div id="customAlert">
+        <div class="alert-box">
+            <div style="font-size: 16px; font-weight: 900; margin-bottom: 10px;">SYSTEM MESSAGE</div>
+            <p id="alertMsg" style="font-size: 14px; color: #444; margin-bottom: 15px;"></p>
+            <button class="btn" style="padding: 10px; margin: 0;" onclick="closeAlert()">PROCEED</button>
+        </div>
+    </div>
+
+    <div id="signUpPage" class="box">
+        <div class="logo">RD_BROKER</div>
+        <p style="font-size: 14px; font-weight: bold; margin-bottom: 15px;">NEW TRADER REGISTRATION</p>
+        <input type="number" id="regPhone" placeholder="Mobile Number">
+        <input type="password" id="regPass" placeholder="Set Password">
+        <input type="password" id="regConfirmPass" placeholder="Confirm Password">
+        <input type="number" id="inviteCode" placeholder="Invite Code (10 Digits)">
+        <button class="btn" onclick="saveData()">Sign Up</button>
+        <div class="switch" onclick="showLogin()">Already a member? Sign In</div>
+    </div>
+
+    <div id="loginPage" class="box">
+        <div class="logo">RD_BROKER</div>
+        <p style="font-size: 14px; font-weight: bold;">SECURE LOGIN</p>
+        <input type="number" id="logPhone" placeholder="Phone Number">
+        <input type="password" id="logPass" placeholder="Password">
+        <button class="btn" onclick="checkLogin()">Sign In</button>
+        <div class="switch" onclick="showSignUp()">New Trader? Sign Up</div>
+    </div>
+
+    <script>
+        const MASTER_INVITE = "7399789765"; // Aapka specified invite code
+
+        function proAlert(msg) { document.getElementById('alertMsg').innerText = msg; document.getElementById('customAlert').style.display = 'flex'; }
+        function closeAlert() { document.getElementById('customAlert').style.display = 'none'; }
+        function showLogin() { document.getElementById('signUpPage').style.display = 'none'; document.getElementById('loginPage').style.display = 'block'; }
+        function showSignUp() { document.getElementById('loginPage').style.display = 'none'; document.getElementById('signUpPage').style.display = 'block'; }
+
+        function saveData() {
+            let phone = document.getElementById('regPhone').value;
+            let pass = document.getElementById('regPass').value;
+            let confirm = document.getElementById('regConfirmPass').value;
+            let invite = document.getElementById('inviteCode').value;
+
+            if(!phone || !pass || !invite) return proAlert("FILL ALL FIELDS!");
+            if(pass !== confirm) return proAlert("PASSWORDS MISMATCH!");
+            
+            // Invite Code Validation
+            if(invite !== MASTER_INVITE) {
+                return proAlert("INVALID INVITE CODE!");
+            }
+
+            localStorage.setItem('userPhone', phone);
+            localStorage.setItem('userPass', pass);
+            proAlert("REGISTRATION SUCCESS!");
+            showLogin();
+        }
+
+        function checkLogin() {
+            let p = document.getElementById('logPhone').value;
+            let s = document.getElementById('logPass').value;
+            if(p === localStorage.getItem('userPhone') && s === localStorage.getItem('userPass') && p !== null) {
+                window.location.href = "home.html";
+            } else {
+                proAlert("ACCESS DENIED!");
+            }
+        }
+    </script>
+</body>
+</html>

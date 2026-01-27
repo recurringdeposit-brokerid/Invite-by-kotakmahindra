@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Customer Service | RD Broker</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: #f0f2f5; display: flex; flex-direction: column; height: 100vh; }
+
+        /* Header */
+        .chat-header { background: #000; color: #fff; padding: 15px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .back-btn { text-decoration: none; color: #fff; font-size: 20px; margin-right: 15px; cursor: pointer; }
+        .header-info { flex-grow: 1; }
+        .header-info h2 { font-size: 16px; margin: 0; letter-spacing: 0.5px; }
+        .status { font-size: 11px; color: #2ecc71; font-weight: bold; }
+
+        /* Chat Body */
+        #chatBox { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; line-height: 1.4; position: relative; }
+        .user-msg { align-self: flex-end; background: #000; color: #fff; border-bottom-right-radius: 2px; }
+        .admin-msg { align-self: flex-start; background: #fff; color: #333; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .time { font-size: 9px; margin-top: 5px; opacity: 0.6; display: block; text-align: right; }
+
+        /* Input Area */
+        .input-area { background: #fff; padding: 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; }
+        input { flex-grow: 1; border: 1px solid #eee; padding: 12px; border-radius: 25px; outline: none; background: #f9f9f9; font-size: 14px; }
+        .send-btn { background: #000; color: #fff; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.3s; }
+        .send-btn:active { transform: scale(0.9); }
+    </style>
+</head>
+<body>
+
+    <div class="chat-header">
+        <a href="home.html" class="back-btn">←</a>
+        <div class="header-info">
+            <h2>CUSTOMER SERVICE LIVE CHAT</h2>
+            <span class="status">● Online</span>
+        </div>
+    </div>
+
+    <div id="chatBox">
+        <div class="msg admin-msg">
+            Hello! Welcome to RD Broker Support. How can we help you today?
+            <span class="time">Just now</span>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="userMsg" placeholder="Type your message...">
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userMsg');
+        const userUID = localStorage.getItem('user_uid') || "Guest";
+
+        // Load messages from localStorage
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('chat_history')) || [];
+            // Clear current chat except the first welcome message
+            chatBox.innerHTML = '<div class="msg admin-msg">Hello! Welcome to RD Broker Support. How can we help you today?<span class="time">Just now</span></div>';
+            
+            messages.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `msg ${m.sender === 'user' ? 'user-msg' : 'admin-msg'}`;
+                div.innerHTML = `${m.text} <span class="time">${m.time}</span>`;
+                chatBox.appendChild(div);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Send message function
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (text === "") return;
+
+            const now = new Date();
+            const timeStr = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
+
+            const newMsg = {
+                sender: 'user',
+                uid: userUID,
+                text: text,
+                time: timeStr
+            };
+
+            // Save to LocalStorage
+            const messages = JSON.parse(localStorage.getItem('chat_history')) || [];
+            messages.push(newMsg);
+            localStorage.setItem('chat_history', JSON.stringify(messages));
+
+            // Clear input and reload
+            userInput.value = "";
+            loadMessages();
+
+            // Auto-scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Listen for "Enter" key
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        // Refresh messages every 2 seconds to see admin replies
+        setInterval(loadMessages, 2000);
+
+        // Initial load
+        loadMessages();
+    </script>
+</body>
+</html>

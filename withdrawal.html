@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdrawal | ANTI_PANEL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg-body: #060b13; 
+            --bg-card: #000000; /* Pure Black for buttons */
+            --bg-nav: #0f172a;
+            --accent: #00b4db; 
+            --text-main: #e2e8f0; 
+            --text-dim: #94a3b8; 
+            --border: #1f2937;
+        }
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+
+        /* Nav */
+        .nav-header { 
+            background: var(--bg-nav); border-bottom: 1px solid var(--border); 
+            padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .back-btn { cursor: pointer; color: var(--text-dim); display: flex; align-items: center; }
+
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        
+        /* Main Selection Menu - FULL BLACK BOXES */
+        #menuPage { display: block; }
+        .menu-card {
+            background: #000000; /* Pura Black */
+            border: 1px solid #111; /* Very dark border */
+            padding: 25px; 
+            border-radius: 15px; 
+            margin-bottom: 15px;
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            cursor: pointer; 
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .menu-card:active { transform: scale(0.96); background: #050505; border-color: var(--accent); }
+        
+        .menu-info { display: flex; align-items: center; gap: 15px; }
+        .menu-info img { width: 45px; height: 45px; object-fit: contain; }
+        
+        /* Wallet Icon */
+        .wallet-icon { width: 45px; height: 45px; background: #fbbf24; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+
+        .menu-info span { font-weight: bold; font-size: 15px; letter-spacing: 1px; color: #fff; }
+        .arrow-right { color: var(--accent); font-weight: bold; font-size: 18px; opacity: 0.7; }
+
+        /* Form Pages */
+        .form-page { display: none; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .glass-card { background: #0a0f18; border: 1px solid var(--border); border-radius: 20px; padding: 25px; }
+        h1 { font-size: 20px; margin-bottom: 20px; color: var(--accent); text-align: center; }
+        
+        .label-text { font-size: 11px; font-weight: bold; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; display: block; }
+
+        input {
+            width: 100%; background: #000; border: 1px solid var(--border);
+            padding: 15px; border-radius: 12px; color: white; font-size: 15px; outline: none; margin-bottom: 12px;
+        }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 180, 219, 0.1); }
+
+        .withdraw-input-wrapper { position: relative; margin-top: 10px; }
+        .withdraw-input-wrapper span { position: absolute; left: 15px; top: 15px; font-weight: bold; color: var(--accent); font-size: 18px; }
+        .withdraw-input-wrapper input { padding-left: 40px; font-size: 22px; color: var(--accent); font-weight: bold; }
+
+        .btn-main {
+            width: 100%; background: linear-gradient(90deg, #00b4db 0%, #0083b0 100%);
+            color: #000; border: none; padding: 18px; border-radius: 12px;
+            font-size: 16px; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-top: 10px;
+        }
+
+        .status-msg { font-size: 11px; color: #f87171; margin-bottom: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-header">
+        <div class="back-btn" id="navBack" onclick="goBack()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+        </div>
+        <div id="pageTitle" style="font-size: 10px; font-weight: bold; letter-spacing: 2px; color: var(--accent);">WITHDRAWAL METHODS</div>
+        <div style="width: 24px;"></div>
+    </nav>
+
+    <div class="container">
+        
+        <div id="menuPage">
+            <div class="menu-card" onclick="openForm('upi')">
+                <div class="menu-info">
+                    <img src="image11.png" alt="UPI">
+                    <span>UPI TRANSFER</span>
+                </div>
+                <div class="arrow-right">→</div>
+            </div>
+
+            <div class="menu-card" onclick="openForm('bank')">
+                <div class="menu-info">
+                    <div class="wallet-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="#000"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    </div>
+                    <span>BANK CARD</span>
+                </div>
+                <div class="arrow-right">→</div>
+            </div>
+
+            <div class="menu-card" onclick="openForm('usdt')">
+                <div class="menu-info">
+                    <img src="image12.png" alt="USDT">
+                    <span>USDT (TRC20)</span>
+                </div>
+                <div class="arrow-right">→</div>
+            </div>
+        </div>
+
+        <div id="upiPage" class="form-page">
+            <div class="glass-card">
+                <h1>UPI Withdrawal</h1>
+                <input type="text" placeholder="Enter Full Name">
+                <input type="text" placeholder="Enter UPI ID">
+                <input type="text" placeholder="Re-enter UPI ID">
+                <label class="label-text">Withdraw Amount</label>
+                <div class="withdraw-input-wrapper"><span>₹</span><input type="number" value="0.00"></div>
+                <button class="btn-main">Submit Request</button>
+            </div>
+        </div>
+
+        <div id="bankPage" class="form-page">
+            <div class="glass-card">
+                <h1>Bank Withdrawal</h1>
+                <input type="text" placeholder="Account Holder Name">
+                <input type="number" placeholder="Account Number">
+                <input type="text" placeholder="Bank Name">
+                <input type="text" placeholder="IFSC Code">
+                <input type="number" placeholder="Phone Number">
+                <input type="email" placeholder="Email ID">
+                <label class="label-text">Withdraw Amount</label>
+                <div class="withdraw-input-wrapper"><span>₹</span><input type="number" value="0.00"></div>
+                <button class="btn-main">Submit Request</button>
+            </div>
+        </div>
+
+        <div id="usdtPage" class="form-page">
+            <div class="glass-card">
+                <h1>USDT Withdrawal</h1>
+                <input type="text" placeholder="Wallet Label (e.g. TrustWallet)">
+                <input type="text" placeholder="USDT Address (TRC20)">
+                <div class="status-msg">* Verify your TRC20 address before submitting.</div>
+                <label class="label-text">Withdraw Amount</label>
+                <div class="withdraw-input-wrapper"><span>$</span><input type="number" value="0.00"></div>
+                <button class="btn-main">Submit Request</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentLevel = "menu";
+        function openForm(type) {
+            document.getElementById('menuPage').style.display = 'none';
+            document.querySelectorAll('.form-page').forEach(p => p.style.display = 'none');
+            if(type === 'upi') {
+                document.getElementById('upiPage').style.display = 'block';
+                document.getElementById('pageTitle').innerText = "UPI WITHDRAW";
+            } else if(type === 'bank') {
+                document.getElementById('bankPage').style.display = 'block';
+                document.getElementById('pageTitle').innerText = "BANK WITHDRAW";
+            } else if(type === 'usdt') {
+                document.getElementById('usdtPage').style.display = 'block';
+                document.getElementById('pageTitle').innerText = "USDT WITHDRAW";
+            }
+            currentLevel = "form";
+        }
+
+        function goBack() {
+            if(currentLevel === "form") {
+                document.querySelectorAll('.form-page').forEach(p => p.style.display = 'none');
+                document.getElementById('menuPage').style.display = 'block';
+                document.getElementById('pageTitle').innerText = "WITHDRAWAL METHODS";
+                currentLevel = "menu";
+            } else {
+                window.location.href = "home.html";
+            }
+        }
+    </script>
+</body>
+</html>

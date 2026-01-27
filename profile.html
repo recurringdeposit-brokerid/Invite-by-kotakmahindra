@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | RD Broker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; color: #333; }
+
+        /* Header Updated to point to home.html */
+        .header { background: #000; color: #fff; padding: 20px; text-align: center; position: relative; }
+        .back-btn { position: absolute; left: 15px; top: 22px; cursor: pointer; color: #fff; text-decoration: none; font-size: 20px; }
+
+        .container { max-width: 500px; margin: auto; padding: 20px; }
+
+        /* Profile Photo Section */
+        .profile-pic-container { text-align: center; margin-bottom: 25px; position: relative; }
+        #profileDisplay { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #eee; }
+        .upload-btn { display: block; margin: 10px auto; font-size: 12px; color: #00b4db; cursor: pointer; font-weight: bold; }
+        #fileInput { display: none; }
+
+        /* UID Card */
+        .uid-card { background: #fff; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border: 1px solid #eee; }
+        .uid-text { font-size: 14px; color: #888; font-weight: bold; }
+        #uidValue { color: #000; font-family: monospace; font-size: 16px; }
+        .copy-btn { background: #000; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+        /* Form Fields */
+        .form-group { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #eee; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #999; text-transform: uppercase; margin-bottom: 5px; }
+        input { width: 100%; border: none; font-size: 15px; font-weight: 600; color: #333; outline: none; padding: 5px 0; }
+        input:disabled { color: #aaa; cursor: not-allowed; background: transparent; }
+        
+        .save-btn { width: 100%; background: #000; color: #fff; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .save-btn:active { transform: scale(0.98); }
+        
+        .hint { font-size: 10px; color: #ff4444; margin-top: 5px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="home.html" class="back-btn">←</a>
+        <span style="font-weight: 900; letter-spacing: 1px;">MY PROFILE</span>
+    </div>
+
+    <div class="container">
+        <div class="profile-pic-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" id="profileDisplay" alt="User">
+            <label for="fileInput" class="upload-btn">CHANGE PHOTO</label>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="uid-card">
+            <div>
+                <span class="uid-text">USER ID (UID)</span><br>
+                <span id="uidValue">Loading...</span>
+            </div>
+            <button class="copy-btn" onclick="copyUID()">COPY</button>
+        </div>
+
+        <div class="form-group">
+            <label>Nick Name</label>
+            <input type="text" id="nickName" placeholder="Enter Nickname">
+        </div>
+
+        <div class="form-group">
+            <label>Real Name</label>
+            <input type="text" id="realName" placeholder="Enter Legal Name">
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input type="number" id="phoneNum" placeholder="Phone not set">
+            <span class="hint" id="phoneHint" style="display:none;">* Once saved, this cannot be changed.</span>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="emailAdd" placeholder="Enter Email">
+            <span class="hint" id="emailHint" style="display:none;">* Once saved, this cannot be changed.</span>
+        </div>
+
+        <button class="save-btn" onclick="confirmAndSave()">SAVE CHANGES</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            if(!localStorage.getItem('user_uid')) {
+                let randomUID = "RD" + Math.floor(Math.random() * 9000000 + 1000000);
+                localStorage.setItem('user_uid', randomUID);
+            }
+            document.getElementById('uidValue').innerText = localStorage.getItem('user_uid');
+            loadData();
+        };
+
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', function() {
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('profileDisplay').src = reader.result;
+                localStorage.setItem('profile_img', reader.result);
+            }
+            reader.readAsDataURL(this.files[0]);
+        });
+
+        function copyUID() {
+            let uid = document.getElementById('uidValue').innerText;
+            navigator.clipboard.writeText(uid);
+            alert("UID Copied: " + uid);
+        }
+
+        // Added confirmation step before locking fields
+        function confirmAndSave() {
+            let phone = document.getElementById('phoneNum').value;
+            let email = document.getElementById('emailAdd').value;
+            
+            let needsLockConfirm = false;
+            if ((phone && !localStorage.getItem('phone_locked')) || (email && !localStorage.getItem('email_locked'))) {
+                needsLockConfirm = true;
+            }
+
+            if (needsLockConfirm) {
+                if (confirm("Warning: Phone and Email cannot be changed after saving. Do you want to proceed?")) {
+                    saveProfile();
+                }
+            } else {
+                saveProfile();
+            }
+        }
+
+        function saveProfile() {
+            let nick = document.getElementById('nickName').value;
+            let real = document.getElementById('realName').value;
+            let phone = document.getElementById('phoneNum').value;
+            let email = document.getElementById('emailAdd').value;
+
+            if(nick) localStorage.setItem('nick_name', nick);
+            if(real) localStorage.setItem('real_name', real);
+            
+            if(phone && !localStorage.getItem('phone_locked')) {
+                localStorage.setItem('user_phone', phone);
+                localStorage.setItem('phone_locked', 'true');
+            }
+            if(email && !localStorage.getItem('email_locked')) {
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('email_locked', 'true');
+            }
+
+            alert("Profile Updated Successfully!");
+            loadData();
+        }
+
+        function loadData() {
+            if(localStorage.getItem('profile_img')) document.getElementById('profileDisplay').src = localStorage.getItem('profile_img');
+            if(localStorage.getItem('nick_name')) document.getElementById('nickName').value = localStorage.getItem('nick_name');
+            if(localStorage.getItem('real_name')) document.getElementById('realName').value = localStorage.getItem('real_name');
+            
+            if(localStorage.getItem('user_phone')) {
+                document.getElementById('phoneNum').value = localStorage.getItem('user_phone');
+                document.getElementById('phoneNum').disabled = true;
+                document.getElementById('phoneHint').style.display = 'none';
+            } else {
+                document.getElementById('phoneHint').style.display = 'block';
+            }
+
+            if(localStorage.getItem('user_email')) {
+                document.getElementById('emailAdd').value = localStorage.getItem('user_email');
+                document.getElementById('emailAdd').disabled = true;
+                document.getElementById('emailHint').style.display = 'none';
+            } else {
+                document.getElementById('emailHint').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

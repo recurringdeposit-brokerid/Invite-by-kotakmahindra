@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ANTI_PANEL - Admin</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f0f0; padding: 20px; margin: 0; }
+        .admin-box { background: #fff; padding: 25px; border-radius: 15px; max-width: 600px; margin: 20px auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; font-weight: 900; letter-spacing: 1px; }
+        
+        label { font-weight: bold; display: block; margin-top: 20px; font-size: 13px; color: #555; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #eee; border-radius: 8px; font-size: 15px; outline: none; }
+        
+        .save-btn { background: #000; color: #fff; border: none; padding: 18px; width: 100%; margin-top: 25px; cursor: pointer; font-weight: bold; border-radius: 10px; font-size: 16px; transition: 0.3s; }
+        .save-btn:active { transform: scale(0.97); }
+
+        /* Chat Support Section */
+        .chat-admin-section { margin-top: 40px; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        #adminChatBox { height: 300px; overflow-y: auto; border: 1px solid #eee; padding: 10px; margin-top: 10px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
+        .msg { padding: 8px 12px; border-radius: 10px; font-size: 13px; max-width: 80%; }
+        .user-msg { background: #e1f5fe; align-self: flex-start; color: #0277bd; }
+        .admin-msg { background: #eeeeee; align-self: flex-end; color: #333; }
+        .chat-input-group { display: flex; gap: 10px; margin-top: 10px; }
+        .reply-btn { background: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 10px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+<div class="admin-box">
+    <h2>ANTI_PANEL ADMIN</h2>
+    
+    <label>1. Select Bank to Edit:</label>
+    <select id="bankSelect" onchange="loadBankSettings()">
+        <option value="KOTAK MAHINDRA">KOTAK MAHINDRA</option>
+        <option value="UNION BANK">UNION BANK</option>
+        <option value="STATE BANK">STATE BANK</option>
+        <option value="BANK OF BARODA">BANK OF BARODA</option>
+        <option value="HDFC BANK">HDFC BANK</option>
+        <option value="PUNJAB NATIONAL">PUNJAB NATIONAL</option>
+        <option value="AXIS BANK">AXIS BANK</option>
+        <option value="BANK OF INDIA">BANK OF INDIA</option>
+        <option value="CENTRAL BANK">CENTRAL BANK</option>
+        <option value="BANK OF MAHARASHTRA">BANK OF MAHARASHTRA</option>
+    </select>
+
+    <label>2. Set Profit Percentage (%):</label>
+    <input type="number" id="newProfit" placeholder="Example: 85">
+
+    <label>3. Total Investment Amount (₹):</label>
+    <input type="text" id="totalInv" placeholder="Example: 5,50,000.00">
+
+    <label>4. Minimum Deposit for this Bank (₹):</label>
+    <input type="number" id="minDeposit" placeholder="Example: 500">
+
+    <button class="save-btn" onclick="updateSettings()">SAVE BANK SETTINGS</button>
+</div>
+
+<div class="admin-box chat-admin-section">
+    <h3 style="font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px;">LIVE CHAT SUPPORT (USER MESSAGES)</h3>
+    <div id="adminChatBox">
+        </div>
+    <div class="chat-input-group">
+        <input type="text" id="adminReply" placeholder="Type your reply here...">
+        <button class="reply-btn" onclick="sendReply()">REPLY</button>
+    </div>
+</div>
+
+<div id="toast">Settings Saved Successfully!</div>
+
+<script>
+    // --- Bank Settings Logic ---
+    function loadBankSettings() {
+        let bank = document.getElementById('bankSelect').value;
+        document.getElementById('newProfit').value = localStorage.getItem(bank + '_profit') || "";
+        document.getElementById('totalInv').value = localStorage.getItem(bank + '_total_inv') || "";
+        document.getElementById('minDeposit').value = localStorage.getItem(bank + '_min_deposit') || "";
+    }
+
+    function updateSettings() {
+        let bank = document.getElementById('bankSelect').value;
+        let profit = document.getElementById('newProfit').value;
+        let totalInv = document.getElementById('totalInv').value;
+        let minDep = document.getElementById('minDeposit').value;
+
+        if(!profit || !totalInv || !minDep) {
+            showToast("Please fill all fields!");
+            return;
+        }
+
+        localStorage.setItem(bank + '_profit', profit);
+        localStorage.setItem(bank + '_total_inv', totalInv);
+        localStorage.setItem(bank + '_min_deposit', minDep); // Individual Min Deposit
+
+        showToast("Settings Updated for " + bank);
+    }
+
+    // --- Chat System Logic ---
+    function loadAdminChat() {
+        const chatBox = document.getElementById('adminChatBox');
+        const messages = JSON.parse(localStorage.getItem('chat_history')) || [];
+        
+        chatBox.innerHTML = "";
+        messages.forEach(m => {
+            const div = document.createElement('div');
+            div.className = `msg ${m.sender === 'user' ? 'user-msg' : 'admin-msg'}`;
+            div.innerHTML = `<strong>${m.sender === 'user' ? 'User ('+m.uid+')' : 'Admin'}:</strong><br>${m.text}`;
+            chatBox.appendChild(div);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendReply() {
+        const replyText = document.getElementById('adminReply').value.trim();
+        if (replyText === "") return;
+
+        const messages = JSON.parse(localStorage.getItem('chat_history')) || [];
+        const now = new Date();
+        const timeStr = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
+
+        const replyMsg = {
+            sender: 'admin',
+            text: replyText,
+            time: timeStr
+        };
+
+        messages.push(replyMsg);
+        localStorage.setItem('chat_history', JSON.stringify(messages));
+        document.getElementById('adminReply').value = "";
+        loadAdminChat();
+        showToast("Reply Sent!");
+    }
+
+    function showToast(msg) {
+        let x = document.getElementById("toast");
+        x.innerText = msg;
+        x.className = "show";
+        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+    }
+
+    // Refresh chat every 2 seconds
+    setInterval(loadAdminChat, 2000);
+    // Initial Load
+    window.onload = loadBankSettings; loadAdminChat();
+</script>
+
+</body>
+</html>
